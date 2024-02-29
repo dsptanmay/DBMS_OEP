@@ -25,6 +25,26 @@ class App:
 
         self.cursor = self.cnx.cursor()
 
+    def showCurrentTriggers(self):
+        q = "show triggers"
+        self.cursor.execute(q)
+        res = self.cursor.fetchall()
+        vals = []
+        for row in res:
+            t = [
+                str(row["Trigger"]),
+                str(row["Event"]),
+            ]
+            vals.append(t)
+
+        print(
+            tabulate(
+                vals,
+                headers=["Trigger Name", "Event Type"],
+                tablefmt="fancy_grid",
+            )
+        )
+
     def showPopularMonths(self):
         q = """
             SELECT
@@ -412,7 +432,12 @@ class Main(App):
                 self.checkOccupancy()
 
     def mainMenu(self):
-        chs = ["Stored Queries", "Stored Procedures", "EXIT"]
+        chs = [
+            "Stored Queries",
+            "Stored Procedures",
+            "Show Current Triggers",
+            "EXIT",
+        ]
         while True:
             ch = qr.select(
                 "Choose the action set you want to use",
@@ -423,8 +448,10 @@ class Main(App):
                 exit(1)
             elif ch == chs[0]:
                 self.askQueries()
-            else:
+            elif ch == chs[1]:
                 self.askProcedures()
+            elif ch == chs[2]:
+                self.showCurrentTriggers()
 
 
 if __name__ == "__main__":
