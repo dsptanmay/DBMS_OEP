@@ -5,8 +5,6 @@ Flight Booking Management System
 """
 
 from datetime import datetime
-import os
-from turtle import st
 import pymysql.cursors
 import questionary as qr
 import pprint
