@@ -25,6 +25,34 @@ class App:
 
         self.cursor = self.cnx.cursor()
 
+    def showPopularMonths(self):
+        q = """
+            SELECT
+                DATE_FORMAT(bookingDate, '%M %Y') AS MonthYear,
+                COUNT(*) AS TotalBookings
+            FROM
+                bookings
+            GROUP BY
+                DATE_FORMAT(bookingDate, '%M %Y')
+            ORDER BY
+                TotalBookings DESC
+            LIMIT 10;
+            """
+        self.cursor.execute(q)
+        res = self.cursor.fetchall()
+
+        vals = []
+        for row in res:
+            vals.append(list(map(str, row.values())))
+
+        print(
+            tabulate(
+                vals,
+                headers=["Month Year", "Total Number of Bookings"],
+                tablefmt="fancy_grid",
+            )
+        )
+
     def showPopularPassengers(self):
         q = """
             SELECT
@@ -352,6 +380,8 @@ class Main(App):
             self.showPopularRoutes()
         elif ch == chs[3]:
             self.showPopularPassengers()
+        elif ch == chs[4]:
+            self.showPopularMonths()
 
     def askProcedures(self):
         chs = [
