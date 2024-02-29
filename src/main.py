@@ -4,6 +4,7 @@ Title: Database Management Systems - Open Ended Project
 Flight Booking System
 """
 
+import os
 import pymysql.cursors
 import questionary as qr
 import pprint
@@ -94,8 +95,28 @@ class App:
         ]
         print(tabulate(res, headers=headers, tablefmt="fancy_grid"))
 
-    def showAvgBookingsPassenger(self):
-        pass
+    def bookingsPsgrPrevYear(self):
+        self.cursor.execute("SELECT pid from `passengers`")
+        res = self.cursor.fetchall()
+        vals = [str(row["pid"]) for row in res]
+
+        pid = qr.autocomplete("Choose a Passenger ID ", choices=vals).ask()
+        bQuery = "call bookingsPrevYear(%s)"
+        self.cursor.execute(
+            bQuery,
+            (int(pid),),
+        )
+        data = self.cursor.fetchall()
+        vals = [str(row["avg_bookings"]) for row in data]
+        pprint.pprint(data)
+        term = os.get_terminal_size()
+        print(
+            "Number of Bookings done by passenger in previous year".center(
+                term.columns, " "
+            )
+        )
+        print("-" * term.columns)
+        print(str(data[0]["avg_bookings"]).center(term.columns, " "))
 
     def showAvgBookingsRange(self):
         pass
@@ -194,7 +215,7 @@ class Main(App):
     def askProcedures(self):
         chs = [
             "Show All Bookings for a particular passenger",
-            "Display avg no of bookings done by a passenger in the previous year",
+            "Display number of bookings done by a passenger in the previous year",
             "Display avg no of bookings done per day in a given date range",
             "BACK",
             "EXIT",
@@ -212,7 +233,7 @@ class Main(App):
             elif ch == chs[0]:
                 self.showAllBookings()
             elif ch == chs[1]:
-                self.showAvgBookingsPassenger()
+                self.bookingsPsgrPrevYear()
             elif ch == chs[2]:
                 self.showAvgBookingsRange()
 
