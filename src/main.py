@@ -100,6 +100,49 @@ class App:
     def showAvgBookingsRange(self):
         pass
 
+    def updateContactDetails(self):
+        self.cursor.execute("SELECT pid FROM `passengers`")
+        res = self.cursor.fetchall()
+        vals = []
+        for row in res:
+            vals.append(str(row["pid"]))
+        # print(vals)
+        pid = qr.autocomplete("Choose a Passenger ID to modify", choices=vals).ask()
+        email = qr.text(
+            "Enter the new email id", instruction="(Leave blank for no changes)"
+        ).ask()
+        phone = qr.text(
+            "Enter the new phone no", instruction="(Leave blank for no changes)"
+        ).ask()
+        if len(email) == 0 and len(phone) == 0:
+            print("No modifications done to the email and phone number!")
+            return
+        if len(email) != 0:
+            emailQuery = "UPDATE `passengers` SET email=%s WHERE pid=%s"
+            self.cursor.execute(
+                emailQuery,
+                (
+                    email,
+                    int(pid),
+                ),
+            )
+            self.cnx.commit()
+            qr.print("Email ID successfully modified!", style="bold italic fg:green")
+
+        if len(phone) != 0:
+            phoneQuery = "UPDATE `passengers` SET phone=%s WHERE pid=%s"
+            self.cursor.execute(
+                phoneQuery,
+                (
+                    phone,
+                    int(pid),
+                ),
+            )
+            self.cnx.commit()
+            qr.print(
+                "Phone Number successfully modified!", style="bold italic fg:green"
+            )
+
     def insertData(self):
         pid = qr.text("Enter the Passenger ID").ask()
         firstName = qr.text("Enter First Name").ask()
@@ -128,7 +171,12 @@ class Main(App):
         super().__init__()
 
     def askQueries(self):
-        chs = ["Show All Passengers", "BACK", "EXIT"]
+        chs = [
+            "Show All Passengers",
+            "Update contact details for a particular passenger",
+            "BACK",
+            "EXIT",
+        ]
         ch = qr.select(
             "Choose a query to you want to perform",
             choices=chs,
@@ -140,6 +188,8 @@ class Main(App):
             exit(1)
         elif ch == chs[0]:
             self.showAllPassengers()
+        elif ch == chs[1]:
+            self.updateContactDetails()
 
     def askProcedures(self):
         chs = [
