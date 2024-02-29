@@ -383,25 +383,26 @@ class Main(App):
             "BACK",
             "EXIT",
         ]
-        ch = qr.select(
-            "Choose a query to you want to perform",
-            choices=chs,
-            default=chs[0],
-        ).ask()
-        if ch == chs[-2]:
-            self.mainMenu()
-        elif ch == chs[-1]:
-            exit(1)
-        elif ch == chs[0]:
-            self.showAllPassengers()
-        elif ch == chs[1]:
-            self.updateContactDetails()
-        elif ch == chs[2]:
-            self.showPopularRoutes()
-        elif ch == chs[3]:
-            self.showPopularPassengers()
-        elif ch == chs[4]:
-            self.showPopularMonths()
+        while True:
+            ch = qr.select(
+                "Choose a query to you want to perform",
+                choices=chs,
+                default=chs[0],
+            ).ask()
+            if ch == chs[-2]:
+                self.mainMenu()
+            elif ch == chs[-1]:
+                exit(1)
+            elif ch == chs[0]:
+                self.showAllPassengers()
+            elif ch == chs[1]:
+                self.updateContactDetails()
+            elif ch == chs[2]:
+                self.showPopularRoutes()
+            elif ch == chs[3]:
+                self.showPopularPassengers()
+            elif ch == chs[4]:
+                self.showPopularMonths()
 
     def askProcedures(self):
         chs = [
