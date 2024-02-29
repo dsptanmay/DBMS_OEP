@@ -4,7 +4,9 @@ Title: Database Management Systems - Open Ended Project
 Flight Booking System
 """
 
+from datetime import datetime
 import os
+from turtle import st
 import pymysql.cursors
 import questionary as qr
 import pprint
@@ -106,9 +108,7 @@ class App:
             bQuery,
             (int(pid),),
         )
-        data = self.cursor.fetchall()
-        vals = [str(row["avg_bookings"]) for row in data]
-        pprint.pprint(data)
+        data = self.cursor.fetchone()
         term = os.get_terminal_size()
         print(
             "Number of Bookings done by passenger in previous year".center(
@@ -116,10 +116,42 @@ class App:
             )
         )
         print("-" * term.columns)
-        print(str(data[0]["avg_bookings"]).center(term.columns, " "))
+
+        print(
+            str(data.get("avg_bookings", None)).center(term.columns, " "),
+        )
 
     def showAvgBookingsRange(self):
-        pass
+        start_date = qr.text("Enter start date", instruction="(YYYY-MM-DD)").ask()
+        end_date = qr.text("Enter end date", instruction="(YYYY-MM-DD)").ask()
+
+        start_date = datetime.strptime(
+            start_date,
+            "%Y-%m-%d",
+        )
+        end_date = datetime.strptime(
+            end_date,
+            "%Y-%m-%d",
+        )
+        if start_date > end_date:
+            qr.print(
+                "End Date cannot be less than start date!",
+                style="bold italic fg:red",
+            )
+
+        procQuery = "call avgBookingsPerDay(%s, %s)"
+        self.cursor.execute(
+            procQuery,
+            (
+                start_date,
+                end_date,
+            ),
+        )
+        res = self.cursor.fetchone()
+        term = os.get_terminal_size().columns
+        print("Average Number of Bookings Done Per Day".center(term, " "))
+        print("-" * term)
+        print(str(res.get("averageBookingsPerDay")).center(term, " "))
 
     def updateContactDetails(self):
         self.cursor.execute("SELECT pid FROM `passengers`")
