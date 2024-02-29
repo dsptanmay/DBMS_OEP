@@ -1,7 +1,7 @@
 """
 Authors: Tanmay Deshpande, Sriniwas Paste, Abhishek Kalgudi
 Title: Database Management Systems - Open Ended Project
-Flight Booking System
+Flight Booking Management System
 """
 
 from datetime import datetime
@@ -24,26 +24,6 @@ class App:
         )
 
         self.cursor = self.cnx.cursor()
-
-    def showCurrentTriggers(self):
-        q = "show triggers"
-        self.cursor.execute(q)
-        res = self.cursor.fetchall()
-        vals = []
-        for row in res:
-            t = [
-                str(row["Trigger"]),
-                str(row["Event"]),
-            ]
-            vals.append(t)
-
-        print(
-            tabulate(
-                vals,
-                headers=["Trigger Name", "Event Type"],
-                tablefmt="fancy_grid",
-            )
-        )
 
     def showPopularMonths(self):
         q = """
@@ -431,6 +411,26 @@ class Main(App):
                 self.showAvgBookingsRange()
             elif ch == chs[3]:
                 self.checkOccupancy()
+
+    def showCurrentTriggers(self):
+        q = "show triggers"
+        self.cursor.execute(q)
+        res = self.cursor.fetchall()
+        vals = []
+        for row in res:
+            t = [
+                str(row["Trigger"]),
+                str(row["Event"]),
+            ]
+            vals.append(t)
+
+        print(
+            tabulate(
+                vals,
+                headers=["Trigger Name", "Event Type"],
+                tablefmt="fancy_grid",
+            )
+        )
 
     def mainMenu(self):
         chs = [
