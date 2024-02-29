@@ -25,6 +25,50 @@ class App:
 
         self.cursor = self.cnx.cursor()
 
+    def showPopularPassengers(self):
+        q = """
+            SELECT
+                p.pID,
+                p.firstName,
+                p.lastName,
+                p.email,
+                p.phone,
+                COUNT(*) AS TotalBookings
+            FROM
+                passengers AS p
+            JOIN
+                bookings AS b ON p.pID = b.pID
+            JOIN
+                flights AS f ON b.fID = f.fID
+            JOIN
+                aircrafts AS a ON f.acID = a.acID
+            GROUP BY
+                p.pID, p.firstName, p.lastName, p.email, p.phone
+            ORDER BY
+                TotalBookings DESC
+            LIMIT 5;
+            """
+        self.cursor.execute(q)
+        res = self.cursor.fetchall()
+        vals = []
+        for row in res:
+            vals.append(list(map(str, row.values())))
+
+        print(
+            tabulate(
+                vals,
+                headers=[
+                    "Passenger ID",
+                    "First Name",
+                    "Last Name",
+                    "Email ID",
+                    "Phone Number",
+                    "Number of Bookings Done",
+                ],
+                tablefmt="fancy_grid",
+            )
+        )
+
     def showPopularRoutes(self):
         q = """
             SELECT
@@ -286,6 +330,8 @@ class Main(App):
             "Show All Passengers",
             "Update contact details for a particular passenger",
             "Show Most Popular Routes (Dest-Arrival)",
+            "Show Details of High Valued Passengers",
+            "Show Most Popular Months for Bookings",
             "BACK",
             "EXIT",
         ]
@@ -304,6 +350,8 @@ class Main(App):
             self.updateContactDetails()
         elif ch == chs[2]:
             self.showPopularRoutes()
+        elif ch == chs[3]:
+            self.showPopularPassengers()
 
     def askProcedures(self):
         chs = [
