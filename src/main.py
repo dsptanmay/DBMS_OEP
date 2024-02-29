@@ -25,6 +25,40 @@ class App:
 
         self.cursor = self.cnx.cursor()
 
+    def showPopularRoutes(self):
+        q = """
+            SELECT
+            CONCAT(dept.name, ' - ', arr.name) AS Route,
+            COUNT(*) AS TotalBookings
+            FROM
+                flights AS f
+            JOIN
+                airports AS dept ON f.deptArpId = dept.arpID
+            JOIN
+                airports AS arr ON f.arrArpId = arr.arpID
+            JOIN
+                bookings AS b ON f.fID = b.fID
+            GROUP BY
+                dept.name, arr.name
+            ORDER BY
+                TotalBookings DESC;
+
+            """
+
+        self.cursor.execute(q)
+        res = self.cursor.fetchall()
+        vals = []
+        for row in res:
+            vals.append(list(map(str, row.values())))
+
+        print(
+            tabulate(
+                vals,
+                headers=["Route", "Number of Bookings"],
+                tablefmt="fancy_grid",
+            ),
+        )
+
     def showAllPassengers(self):
         getQuery = "SELECT * FROM `passengers`"
         self.cursor.execute(getQuery)
@@ -251,6 +285,7 @@ class Main(App):
         chs = [
             "Show All Passengers",
             "Update contact details for a particular passenger",
+            "Show Most Popular Routes (Dest-Arrival)",
             "BACK",
             "EXIT",
         ]
@@ -267,6 +302,8 @@ class Main(App):
             self.showAllPassengers()
         elif ch == chs[1]:
             self.updateContactDetails()
+        elif ch == chs[2]:
+            self.showPopularRoutes()
 
     def askProcedures(self):
         chs = [
