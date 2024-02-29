@@ -109,16 +109,13 @@ class App:
             (int(pid),),
         )
         data = self.cursor.fetchone()
-        term = os.get_terminal_size()
+        vals = [[str(data.get("avg_bookings"))]]
         print(
-            "Number of Bookings done by passenger in previous year".center(
-                term.columns, " "
+            tabulate(
+                vals,
+                headers=["Number of Bookings Done In Previous Year"],
+                tablefmt="fancy_grid",
             )
-        )
-        print("-" * term.columns)
-
-        print(
-            str(data.get("avg_bookings", None)).center(term.columns, " "),
         )
 
     def showAvgBookingsRange(self):
@@ -148,10 +145,14 @@ class App:
             ),
         )
         res = self.cursor.fetchone()
-        term = os.get_terminal_size().columns
-        print("Average Number of Bookings Done Per Day".center(term, " "))
-        print("-" * term)
-        print(str(res.get("averageBookingsPerDay")).center(term, " "))
+        vals = [[res.get("averageBookingsPerDay")]]
+        print(
+            tabulate(
+                vals,
+                headers=["Avg No of Bookings Done in Range"],
+                tablefmt="fancy_grid",
+            )
+        )
 
     def updateContactDetails(self):
         self.cursor.execute("SELECT pid FROM `passengers`")
@@ -195,6 +196,29 @@ class App:
             qr.print(
                 "Phone Number successfully modified!", style="bold italic fg:green"
             )
+
+    def checkOccupancy(self):
+        fQuery = "SELECT fID from `flights`"
+        self.cursor.execute(fQuery)
+        res = self.cursor.fetchall()
+        # print(res)
+        vals = [str(row["fID"]) for row in res]
+        fid = qr.autocomplete("Choose a Flight ID", choices=vals).ask()
+        procQuery = "call checkFlightOccupancy(%s)"
+        self.cursor.execute(
+            procQuery,
+            (fid),
+        )
+        data = self.cursor.fetchone()
+        vals = [list(map(str, data.values()))]
+        hds = ["Flight ID", "Current Occupancy Percentage"]
+        print(
+            tabulate(
+                vals,
+                headers=hds,
+                tablefmt="fancy_grid",
+            )
+        )
 
     def insertData(self):
         pid = qr.text("Enter the Passenger ID").ask()
@@ -249,6 +273,7 @@ class Main(App):
             "Show All Bookings for a particular passenger",
             "Display number of bookings done by a passenger in the previous year",
             "Display avg no of bookings done per day in a given date range",
+            "Check current occupancy percentage of a particular flight",
             "BACK",
             "EXIT",
         ]
@@ -256,7 +281,7 @@ class Main(App):
             ch = qr.select(
                 "Choose a query to you want to perform",
                 choices=chs,
-                default=chs[0],
+                default=chs[-1],
             ).ask()
             if ch == chs[-1]:
                 exit(1)
@@ -268,6 +293,8 @@ class Main(App):
                 self.bookingsPsgrPrevYear()
             elif ch == chs[2]:
                 self.showAvgBookingsRange()
+            elif ch == chs[3]:
+                self.checkOccupancy()
 
     def mainMenu(self):
         chs = ["Stored Queries", "Stored Procedures", "EXIT"]
